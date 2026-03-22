@@ -11,11 +11,11 @@
 --   Y Column:    count
 -- ============================================================
 
-WITH active_l14d AS (
+WITH active_l30d AS (
     SELECT DISTINCT attempted_by
     FROM public.taskattempts
     WHERE project IN ('698a1576fba6dc7ca0159579')
-      AND attempted_at > DATEADD(DAY, -14, CURRENT_TIMESTAMP)
+      AND attempted_at > DATEADD(DAY, -30, CURRENT_TIMESTAMP)
 ),
 qc AS (
     SELECT
@@ -38,7 +38,7 @@ SELECT
         ELSE 'High (40%+)'
     END AS pdr_bucket,
     COUNT(*) AS count
-FROM active_l14d a
+FROM active_l30d a
 LEFT JOIN qc b ON a.attempted_by = b.audited_entity_author_id
 GROUP BY 1
 ORDER BY count DESC

@@ -8,11 +8,11 @@
 -- VISUALIZATION: Default Table is fine.
 -- ============================================================
 
-WITH active_l14d AS (
+WITH active_l30d AS (
     SELECT DISTINCT attempted_by
     FROM public.taskattempts
     WHERE project IN ('698a1576fba6dc7ca0159579')
-      AND attempted_at > DATEADD(DAY, -14, CURRENT_TIMESTAMP)
+      AND attempted_at > DATEADD(DAY, -30, CURRENT_TIMESTAMP)
 ),
 base AS (
     SELECT
@@ -32,7 +32,7 @@ base AS (
     LEFT JOIN public.projects AS p ON u.assigned_project_layers[0]:projectId::string = p._id
     LEFT JOIN public.projects AS pp ON u.chosen_project_layer:projectId::string = pp._id
     LEFT JOIN public.taskpermissionentries AS tpe ON u._id = tpe.worker
-    WHERE u._id IN (SELECT attempted_by FROM active_l14d)
+    WHERE u._id IN (SELECT attempted_by FROM active_l30d)
       AND tpe.permission_group IN ('698a1576fba6dc7ca0159572')
 ),
 call_project AS (
@@ -42,7 +42,7 @@ call_project AS (
     FROM public.taskattempts AS ta
     LEFT JOIN public.projects AS p ON p._id = ta.project
     WHERE ta.project IN ('698a1576fba6dc7ca0159579')
-      AND ta.attempted_at > DATEADD(DAY, -14, CURRENT_TIMESTAMP)
+      AND ta.attempted_at > DATEADD(DAY, -30, CURRENT_TIMESTAMP)
 ),
 qc_raw AS (
     SELECT

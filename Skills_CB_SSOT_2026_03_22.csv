@@ -1,0 +1,36 @@
+EMAIL,NAME,CONTRIBUTOR_ID,DISCOURSE_ID,DIRECT_ASSIGNED_PROJECT,CHOSE_PROJECT,REVIEW_LEVEL,DISABLED,TAG,QC_N,QC_PDR,LAST_3_PDR,N_QMS,AVG_QMS,LAST_3_QMS,TP_L7D,TP_DAY_6,TP_DAY_5,TP_DAY_4,TP_DAY_3,TP_DAY_2,TP_DAY_1,TP_DAY_0,AVG_TP,ACTIVE_RATE
+umrutba@gmail.com+outlier,Rutba Javeed,67ce7f2f52a83e07c9df713c,DIS-wZHC761OWT6UQzsD,Skills Annotation,[SCALE_RLHF] Chat Based Coding Rubrics,-1,true,No Tag,,,,,,,,,,,,,,,,
+mmj2166@columbia.edu+outlier,Mina Jo,665d323d929fd0e55ed4e700,DIS-Yl6qie77wzCTc9E9,i18n Tool Use Safety V2,,-1,,No Tag,,,,,,,,,,,,,,,,
+inqa-coder0562@outlier.ai+outlier,Darshit parekh,6877963702fd20dd70b65a83,DIS-ZUR9d1rbNwu6ZSEV,Code Checkpoint Evals,[SCALE - RLHF for HQL] - Multimango,-1,false,skillbench_trusted,,,,1,5.0,5.0,2,1,1,0,0,0,0,0,0.29,0.29
+nonpareil.designer@gmail.com+outlier,Reginald Crampton,6734032729b95583f180260e,DIS-7LjOsbjzrwIhsn3Y,ACC Data Annotation,[SCALE - RLHF for HQL] - Multimango,-1,true,No Tag,,,,,,,,,,,,,,,,
+pilots-in-coder045@remotasks.com+outlier,YELLAM KIRANMAI,672bf470f13ed84310b4fa57,DIS-MGnwrnXmHLpIUAb4,Code Checkpoint Evals,Hard STEM Multimodal,-1,false,skillbench_trusted,,,,,,,2,1,0,0,0,1,0,0,0.29,0.29
+coder_braintrust_1121_575@outlier.ai+outlier,Mahesh  K,673fa79c45ea43a6a4b832c5,DIS-D9pSPM9wsaCEs0VI,[SCALE_SWE] - SWE Pilot 3,[SCALE - RLHF for HQL] - Multimango,-1,true,No Tag,,,,,,,,,,,,,,,,
+inqa-coder0224@outlier.ai+outlier,Rohan Singh,68404a75a54df3d12a955a99,DIS-dtoKamH8hmEHSjzE,[SCALE_SWE] - SWE Pilot 1,Skills Annotation,-1,,No Tag,,,,,,,,,,,,,,,,
+dalbir1683@gmail.com+outlier,Dalbir Dhillon,679b1ce6fa192537d006521c,DIS-j7ma372rUwEQqJI0,Code Checkpoint Evals,Experts GTFA,-1,true,No Tag,,,,,,,,,,,,,,,,
+brandonatonte@gmail.com+outlier,Brandon Atonte,65b7210c4802ff4a0e0a7fe9,DIS-sub9vkSsspa28urp,Skills Annotation,[SCALE_RLHF] Chat Based Coding Rubrics,-1,true,No Tag,,,,,,,,,,,,,,,,
+brian@pagetechlabs.com+outlier,Brian Page,66fad91860b00a29ea4eb69e,DIS-rxaPkyOOZx1xUSo6,Skills Annotation,[SCALE_RLHF] STEM Checkpoint Evals,-1,,No Tag,,,,,,,,,,,,,,,,
+pubg.badt2@gmail.com+outlier,Saksham Parashar,67c2d74346e1ccf676fc2efb,DIS-XgRvIXnn3Tz2ZcCH,Skills Annotation,[SCALE_AUDIO_RUBRICS] Duplex Audio Rubrics - PPT,-1,true,No Tag,,,,,,,,,,,,,,,,
+coder_braintrust_1104_1488@outlier.ai+outlier,Mohammad Fahad,672947e1aa7364427f35e5b9,DIS-c7cEZ0CUb1ZfH0uA,Skills Annotation,Experts GTFA,-1,,No Tag,,,,,,,,,,,,,,,,
+kevinlamtk@gmail.com+outlier,Kevin Lam,65fdeea11bf1bbfdbfcea0ea,DIS-ilytakqnURiefCyd,Code Checkpoint Evals,[SCALE - RLHF for HQL] - Multimango,-1,true,No Tag,,,,,,,,,,,,,,,,
+sumanc12320@gmail.com+outlier,Suman Chakraborty,6819caa9c25e12c84d5f325c,DIS-Z1fOSdS622fTg7OX,Skills Annotation,[SCALE - RLHF for HQL] - Multimango,-1,false,skillbench_trusted,,,,,,,,,,,,,,,,
+ibarra.ignacio@gmail.com+outlier,Ignacio Ibarra,67e5768e7a91ea78825a0648,DIS-eD5CWfCPXeyku5XJ,Skills Annotation,,-1,true,No Tag,,,,,,,,,,,,,,,,
+c9342873@gmail.com+outlier,Charlie Lin,69656f2ce21dbb13a0fb0090,DIS-WGabbDf6q1RKzJlo,[SCALE_RLHF] STEM Pref Ranking Enhancement,SxS Evals,-1,true,No Tag,,,,,,,,,,,,,,,,
+qa_coder_mena_2072@remotasks.com+outlier,Moath Abdalrazeq,65ef5dd618df44d20c030d6c,DIS-Ttlqqr8j2pOi4GBY,[SCALE_SWE] - SWE Pilot 2,,-1,true,No Tag,,,,,,,,,,,,,,,,
+rrlino@gmail.com+outlier,Ricardo Augusto Lino da Silva,682da502ebe481cd78eb5dd1,DIS-OxltFKTlisqC7tNg,Skills Annotation,Hard STEM Multimodal,-1,,No Tag,,,,1,4.0,4.0,1,0,0,1,0,0,0,0,0.14,0.14
+sonamsony636@gmail.com+outlier,Sonam Kumari,68431ff2d6239db9697df286,DIS-uPStqyfyUKt774pW,Skills Annotation,[SCALE - RLHF for HQL] - Multimango,-1,,No Tag,,,,,,,2,1,0,0,0,0,1,0,0.29,0.29
+latam.coder1272@remotasks.com+outlier,Gabriel Silva,6859aa41d277b6b37dc23eb1,DIS-MVQTsGqFkhKuLEtw,OpenClaw Safety,[SCALE_SWE] - SWE Pilot 1,-1,false,No Tag,,,,,,,1,0,1,0,0,0,0,0,0.14,0.14
+workwithpranish@gmail.com+outlier,Pranish Karki,676e02540499377e7d225321,DIS-ztFOE1XbqQYSqT6D,[SCALE_RLHF] STEM Pref Ranking Enhancement,Workspace Reasoning Prompts,-1,true,No Tag,,,,,,,,,,,,,,,,
+ummaymariumramisa@gmail.com+outlier,Mariam Ramisa,67f7e404fabc1268de15328f,DIS-WKg5UOMw6ivqAsvs,Skills Annotation,Nova MCP Toolathlon SFT + RL,-1,false,skillbench_trusted,,,,1,4.0,4.0,1,0,1,0,0,0,0,0,0.14,0.14
+harshitkawatra08@gmail.com+outlier,Harshit Kawatra,6734eabe345b1924b107d664,DIS-HBlMt0aedLOi7lkM,Skills Annotation,[SCALE_RLHF] STEM Checkpoint Evals,-1,,No Tag,,,,,,,1,0,0,0,1,0,0,0,0.14,0.14
+mi338155@gmail.com+outlier,Md Imran Ansari,6811f6aaddf900dfd30e9030,DIS-TPZwkFuXmFzoZk82,i18n General Human Evals v2,[SCALE - RLHF for HQL] - Multimango,-1,true,No Tag,,,,,,,,,,,,,,,,
+upwork-fro-end-dev-000162@outlier.ai+outlier,Nikhil Singla,67f5d7382725536ab707e3d1,DIS-jaHFtcwscdUWnTXH,Code Checkpoint Evals,[SCALE_SWE] - SWE Pilot 4,0,false,skillbench_trusted,,,,4,4.0,3.666667,4,0,2,1,0,1,0,0,0.57,0.43
+alexandreaguiar1906@gmail.com+outlier,Alexandre Aguiar,683caad97b32a737deb37541,DIS-uuIMl7h8ZXK4TfP1,i18n Code Human Evals,Code Checkpoint Evals,-1,true,No Tag,,,,,,,,,,,,,,,,
+devmitt29@gmail.com+outlier,Dev Mittal,678431fa246a32eb1486042d,DIS-3vrj8haallh6bDcu,[SCALE_SWE] - SWE Pilot 1,Skills Annotation,0,false,skillbench_trusted,,,,4,4.75,5.0,5,2,2,0,0,1,0,0,0.71,0.43
+mrnandanedx@gmail.com+outlier,Raghunadnan Mudadla,671ce42dd89fd0f9a7ac5b4e,DIS-uB6SF5vVvsNp4YSM,Code Checkpoint Evals,[SCALE_RL_SFT] General Helpfulness,0,false,skillbench_trusted,,,,4,4.0,3.666667,5,2,1,0,0,1,1,0,0.71,0.57
+guochen2011gc@gmail.com+outlier,Chen Guo,65d97a082ef4562ac96578b6,DIS-Hx0XLBjuMpH0O8X9,Skills Annotation,[SCALE_RLHF] Chat Based Coding Rubrics,-1,true,No Tag,,,,,,,,,,,,,,,,
+kullarbanjot@gmail.com+outlier,Banjot Kullar,68c44c708571ffe210f76b86,DIS-AWC4O4hN9lgNKu8A,Code Checkpoint Evals,[SCALE_RL_SFT] S/C System Prompt Instruction Following / Steerability,-1,false,skillbench_trusted,,,,2,4.5,4.5,6,2,2,1,0,0,0,1,0.86,0.57
+mohamed.kiddi@um6p.ma+outlier,Mohamed Kiddi,674b7f892a3980d888e08439,DIS-pEB7GbKM3kxCApVH,Code Checkpoint Evals,Code Checkpoint Evals,-1,true,No Tag,,,,,,,,,,,,,,,,
+jayanthpeddi999@gmail.com+outlier,jayanth peddi,6741d9c2e2b26e88969b2165,DIS-UWDGZnfVEzmiDE1T,[SCALE_SWE] - SWE Pilot 3,[SCALE_RLHF] Chat Based Coding Rubrics,0,false,No Tag,,,,8,4.625,5.0,9,2,3,1,0,0,2,1,1.29,0.71
+prasanth.ghantasala@gmail.com+outlier,Prasanth Ghantasala,6729e9da53f4a0ba97c63e86,DIS-ffye0jBMJZix4LD2,,[SCALE - RLHF for HQL] - Multimango,-1,true,No Tag,,,,,,,,,,,,,,,,
+jzh.2052@gmail.com+outlier,Zenghui Jiang,6775b71f06f1e1c204958dec,DIS-vHL53IO1pREmpcJz,Skills Annotation,[SCALE - RLHF for HQL] - Multimango,-1,,No Tag,,,,,,,,,,,,,,,,
+prhashanthkisshan@gmail.com+outlier,Prasanth Junnada,66ff747a08b3467bd1285b96,DIS-HcuDxOY3Ucc2a73o,[SCALE_SWE] - SWE Pilot 1,[SCALE_SWE] - SWE Pilot 1,-1,true,No Tag,,,,,,,,,,,,,,,,

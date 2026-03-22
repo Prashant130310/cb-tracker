@@ -498,9 +498,12 @@
         obj.avg_tp = num('avg_tp');
         obj.active_rate = num('active_rate');
         obj.disabled = obj.disabled === 'true' || obj.disabled === 'TRUE' || obj.disabled === '1' || obj.disabled === 't';
-        // Normalize review_level: Redash outputs numeric (0, 10, 12) — prefix "L" if missing
-        if (obj.review_level && !String(obj.review_level).toUpperCase().startsWith('L')) {
-          obj.review_level = 'L' + obj.review_level;
+        // Normalize review_level: Redash outputs numeric (-1, 0, 10, 12)
+        const rl = String(obj.review_level || '').trim();
+        if (rl === '-1' || rl === 'L-1') {
+          obj.review_level = 'Unassigned';
+        } else if (rl && !rl.toUpperCase().startsWith('L')) {
+          obj.review_level = 'L' + rl;
         }
         if (obj.review_level) obj.review_level = obj.review_level.toUpperCase();
         return obj;
@@ -559,6 +562,7 @@
     }
     function roleInfo(level) {
       const l = (level || '').toUpperCase();
+      if (l === 'UNASSIGNED') return { label: 'Unassigned', cls: 'bg-gray-100 text-gray-500', desc: 'Not yet assigned a review level' };
       if (l === 'L0') return { label: 'Reviewer', cls: 'bg-green-100 text-green-700', desc: 'Reviews attempt tasks' };
       if (l === 'L10') return { label: 'Reviewer + QM', cls: 'bg-blue-100 text-blue-700', desc: 'Reviews tasks & does QM checks' };
       if (l === 'L12') return { label: 'Super-Attempter', cls: 'bg-purple-100 text-purple-700', desc: 'Promoted — attempts high-quality tasks' };
