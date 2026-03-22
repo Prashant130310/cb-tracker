@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CB Progress Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0fdf4', 100: '#dcfce7', 500: '#22c55e', 600: '#16a34a', 700: '#15803d' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .fade-in { animation: fadeIn 0.3s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .drop-zone.drag-over { border-color: #22c55e; background-color: #f0fdf4; }
+    .spark-bar { display: inline-flex; align-items: flex-end; gap: 1px; height: 20px; }
+    .spark-bar span { display: inline-block; width: 6px; border-radius: 1px; min-height: 2px; }
+  </style>
+</head>
+<body class="h-full">
+  <div id="app" class="min-h-full">
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
+      <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+            </div>
+            <h1 class="text-xl font-semibold text-gray-900">CB Progress Tracker</h1>
+          </div>
+          <div class="flex items-center gap-3">
+            <span id="dataInfo" class="text-xs text-gray-400 hidden"></span>
+            <button onclick="exportData()" class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" id="exportBtn" style="display:none">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Export
+            </button>
+            <button onclick="showUploadModal()" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+              Upload CSV
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Tab Navigation -->
+    <div class="bg-white border-b border-gray-200">
+      <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <nav class="flex gap-6" aria-label="Tabs">
+          <button onclick="switchTab('dashboard')" data-tab="dashboard" class="tab-btn border-b-2 border-green-500 text-green-600 py-3 px-1 text-sm font-medium">Dashboard</button>
+          <button onclick="switchTab('contributors')" data-tab="contributors" class="tab-btn border-b-2 border-transparent text-gray-500 hover:text-gray-700 py-3 px-1 text-sm font-medium">Contributors</button>
+          <button onclick="switchTab('pipeline')" data-tab="pipeline" class="tab-btn border-b-2 border-transparent text-gray-500 hover:text-gray-700 py-3 px-1 text-sm font-medium">Pipeline</button>
+          <button onclick="switchTab('quality')" data-tab="quality" class="tab-btn border-b-2 border-transparent text-gray-500 hover:text-gray-700 py-3 px-1 text-sm font-medium">Quality & Strikes</button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+      <!-- Empty State -->
+      <div id="emptyState" class="flex flex-col items-center justify-center py-20">
+        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+          <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+        </div>
+        <h2 class="text-lg font-semibold text-gray-900 mb-2">No data uploaded yet</h2>
+        <p class="text-gray-500 text-sm mb-2 text-center max-w-lg">Export the CSV from your Redash query and upload it here to start tracking CB progress, promotions, and performance.</p>
+        <p class="text-gray-400 text-xs mb-6 text-center max-w-md">Expected columns: name, email, contributor_id, review_level, disabled, tag, qc_n, qc_pdr, last_3_pdr, n_qms, avg_qms, last_3_qms, tp_l7d, avg_tp, active_rate, ...</p>
+        <button onclick="showUploadModal()" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+          Upload Redash CSV
+        </button>
+        <p class="text-xs text-gray-400 mt-4">Or <button onclick="loadSampleData()" class="text-green-600 hover:underline font-medium">load sample data</button> to explore</p>
+      </div>
+
+      <!-- ============ DASHBOARD TAB ============ -->
+      <div id="tab-dashboard" class="tab-content hidden fade-in">
+        <!-- Summary Cards Row 1 -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+          <div onclick="navigateToStatus('')" class="bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:border-gray-400 hover:shadow-md transition-all">
+            <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Total CBs</p>
+            <p class="text-2xl font-bold text-gray-900" id="m-total">0</p>
+          </div>
+          <div onclick="navigateToStatus('active_good')" class="bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:border-green-400 hover:shadow-md transition-all">
+            <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Active (L14d)</p>
+            <p class="text-2xl font-bold text-green-600" id="m-active">0</p>
+          </div>
+          <div onclick="navigateToStatus('low_activity')" class="bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:border-amber-400 hover:shadow-md transition-all">
+            <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Inactive / Low</p>
+            <p class="text-2xl font-bold text-amber-600" id="m-inactive">0</p>
+          </div>
+          <div onclick="navigateToStatus('disabled')" class="bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:border-red-400 hover:shadow-md transition-all">
+            <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Disabled</p>
+            <p class="text-2xl font-bold text-red-600" id="m-disabled">0</p>
+          </div>
+          <div onclick="navigateToStatus('')" class="bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:border-blue-400 hover:shadow-md transition-all">
+            <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Avg QC PDR</p>
+            <p class="text-2xl font-bold text-blue-600" id="m-avgpdr">0%</p>
+          </div>
+          <div onclick="navigateToStatus('')" class="bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:border-purple-400 hover:shadow-md transition-all">
+            <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Avg Throughput</p>
+            <p class="text-2xl font-bold text-purple-600" id="m-avgtp">0</p>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="text-sm font-semibold text-gray-900 mb-4">Review Level Distribution</h3>
+            <div id="levelChart" class="space-y-3"></div>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="text-sm font-semibold text-gray-900 mb-4">QC Defect Rate Distribution</h3>
+            <div id="pdrChart" class="space-y-3"></div>
+          </div>
+        </div>
+
+        <!-- Lists Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="text-sm font-semibold text-gray-900 mb-1">On Track for Promotion</h3>
+            <p class="text-xs text-gray-400 mb-4">Low PDR, good QMS, active — ready to move L0 &rarr; L12</p>
+            <div id="promotionReady" class="space-y-2 max-h-72 overflow-y-auto"></div>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="text-sm font-semibold text-gray-900 mb-1">Needs Attention</h3>
+            <p class="text-xs text-gray-400 mb-4">High PDR, low activity, or declining QMS trend</p>
+            <div id="needsAttention" class="space-y-2 max-h-72 overflow-y-auto"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ CONTRIBUTORS TAB ============ -->
+      <div id="tab-contributors" class="tab-content hidden fade-in">
+        <!-- Filters -->
+        <div class="bg-white rounded-xl border border-gray-200 p-4 mb-4">
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="flex-1 min-w-[200px]">
+              <input type="text" id="searchInput" placeholder="Search by name, email, or ID..." class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none" oninput="filterContributors()">
+            </div>
+            <select id="filterLevel" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none" onchange="filterContributors()">
+              <option value="">All Levels</option>
+            </select>
+            <select id="filterStatus" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none" onchange="filterContributors()">
+              <option value="">All Statuses</option>
+              <option value="active_good">Active & Good PDR (&lt;20%)</option>
+              <option value="active_risky">Active & High PDR (&ge;20%)</option>
+              <option value="low_activity">Low Activity (&lt;0.3 rate)</option>
+              <option value="disabled">Disabled</option>
+              <option value="trusted">Skillbench Trusted</option>
+            </select>
+            <select id="filterPDR" class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none" onchange="filterContributors()">
+              <option value="">All PDR</option>
+              <option value="clean">0% PDR (Clean)</option>
+              <option value="low">1–19% PDR</option>
+              <option value="mid">20–39% PDR</option>
+              <option value="high">40%+ PDR</option>
+            </select>
+            <button onclick="clearFilters()" class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 font-medium">Clear</button>
+          </div>
+        </div>
+
+        <!-- Column Toggle -->
+        <div class="bg-white rounded-xl border border-gray-200 p-3 mb-6">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide mr-1">Columns:</span>
+            <div id="colToggles" class="flex flex-wrap gap-1.5"></div>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="bg-gray-50 border-b border-gray-200" id="tableHeader"></tr>
+              </thead>
+              <tbody id="contributorTableBody" class="divide-y divide-gray-100"></tbody>
+            </table>
+          </div>
+          <div class="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
+            <p class="text-sm text-gray-500" id="tableCount">Showing 0 contributors</p>
+            <div class="flex gap-1" id="pagination"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ PIPELINE TAB ============ -->
+      <div id="tab-pipeline" class="tab-content hidden fade-in">
+        <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+          <h3 class="text-sm font-semibold text-gray-900 mb-2">Promotion Pipeline</h3>
+          <p class="text-xs text-gray-500 mb-6">Last touchers (super-attempters) move <span class="font-semibold text-purple-600">L0 &rarr; L12 directly</span> without QM audit. Incentives: carrots for each QC pass + better missions.</p>
+          <div class="flex items-center justify-center gap-2 flex-wrap">
+            <div onclick="navigateToLevel('')" class="bg-gray-100 border-2 border-gray-300 rounded-xl px-8 py-5 text-center min-w-[160px] cursor-pointer hover:border-gray-500 hover:shadow-md transition-all">
+              <p class="text-sm font-semibold text-gray-700">Attempter</p>
+              <p class="text-xs text-gray-500 mt-1">Submits task</p>
+              <p class="text-2xl font-bold text-gray-900 mt-2" id="pipe-all">0</p>
+              <p class="text-[10px] text-gray-400 mt-1">Click to view all</p>
+            </div>
+            <svg class="w-8 h-8 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            <div onclick="navigateToLevel('L0')" class="bg-green-50 border-2 border-green-300 rounded-xl px-8 py-5 text-center min-w-[160px] cursor-pointer hover:border-green-500 hover:shadow-md transition-all">
+              <p class="text-sm font-semibold text-green-700">L0 Reviewer</p>
+              <p class="text-xs text-green-600 mt-1">Reviews task</p>
+              <p class="text-2xl font-bold text-green-900 mt-2" id="pipe-l0">0</p>
+              <p class="text-[10px] text-green-400 mt-1">Click to view</p>
+            </div>
+            <svg class="w-8 h-8 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            <div onclick="navigateToLevel('L10')" class="bg-blue-50 border-2 border-blue-300 rounded-xl px-8 py-5 text-center min-w-[160px] cursor-pointer hover:border-blue-500 hover:shadow-md transition-all">
+              <p class="text-sm font-semibold text-blue-700">L10</p>
+              <p class="text-xs text-blue-600 mt-1">QM check</p>
+              <p class="text-2xl font-bold text-blue-900 mt-2" id="pipe-l10">0</p>
+              <p class="text-[10px] text-blue-400 mt-1">Click to view</p>
+            </div>
+            <svg class="w-8 h-8 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            <div onclick="navigateToLevel('L12')" class="bg-purple-50 border-2 border-purple-300 rounded-xl px-8 py-5 text-center min-w-[160px] cursor-pointer hover:border-purple-500 hover:shadow-md transition-all">
+              <p class="text-sm font-semibold text-purple-700">L12</p>
+              <p class="text-xs text-purple-600 mt-1">Super-attempter</p>
+              <p class="text-2xl font-bold text-purple-900 mt-2" id="pipe-l12">0</p>
+              <p class="text-[10px] text-purple-400 mt-1">Click to view</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Promotion Decision -->
+        <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+          <h3 class="text-sm font-semibold text-gray-900 mb-2">Promotion Decision Flow</h3>
+          <div class="flex items-center gap-2 mb-6">
+            <span class="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-purple-100 text-purple-700">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              L0 &rarr; L12 directly &mdash; No QM audit required
+            </span>
+          </div>
+          <div class="flex items-start justify-center gap-3 flex-wrap">
+            <div class="bg-blue-50 border border-blue-200 rounded-xl px-6 py-4 text-center min-w-[180px]">
+              <p class="text-sm font-semibold text-blue-700">L0 Reviewer</p>
+              <p class="text-xs text-blue-500 mt-1">Submits 2 tasks to L10</p>
+            </div>
+            <svg class="w-8 h-8 text-gray-400 flex-shrink-0 mt-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            <div class="bg-amber-50 border border-amber-200 rounded-xl px-6 py-4 text-center min-w-[180px]">
+              <p class="text-sm font-semibold text-amber-700">Both scores &ge; 4?</p>
+              <p class="text-xs text-amber-500 mt-1">No rubric changes needed</p>
+            </div>
+            <div class="flex flex-col items-center gap-3 mt-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-medium text-green-600 bg-green-100 px-2 py-0.5 rounded">Yes</span>
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                <div class="bg-green-50 border border-green-200 rounded-xl px-6 py-3 text-center">
+                  <p class="text-sm font-semibold text-green-700">Promoted to L12</p>
+                  <p class="text-xs text-green-500">Skips QM audit</p>
+                  <p class="text-xs text-green-500">Carrots + better missions</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-medium text-red-600 bg-red-100 px-2 py-0.5 rounded">No (rubrics)</span>
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                <div class="bg-red-50 border border-red-200 rounded-xl px-6 py-3 text-center">
+                  <p class="text-sm font-semibold text-red-700">1:1 Session</p>
+                  <p class="text-xs text-red-500">Improve rubrics</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pipeline Lists -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <h4 class="text-sm font-semibold text-gray-900 mb-1 flex items-center gap-2">
+              <span class="w-2 h-2 bg-green-500 rounded-full"></span> Promotion Candidates
+            </h4>
+            <p class="text-xs text-gray-400 mb-3">QC PDR &lt; 20%, QMS &ge; 4, active</p>
+            <div id="pipeList-candidates" class="space-y-2 max-h-72 overflow-y-auto"></div>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <h4 class="text-sm font-semibold text-gray-900 mb-1 flex items-center gap-2">
+              <span class="w-2 h-2 bg-amber-500 rounded-full"></span> Needs Coaching
+            </h4>
+            <p class="text-xs text-gray-400 mb-3">High PDR or declining QMS trend</p>
+            <div id="pipeList-coaching" class="space-y-2 max-h-72 overflow-y-auto"></div>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <h4 class="text-sm font-semibold text-gray-900 mb-1 flex items-center gap-2">
+              <span class="w-2 h-2 bg-red-500 rounded-full"></span> At Risk / Inactive
+            </h4>
+            <p class="text-xs text-gray-400 mb-3">Disabled, very low activity, or high PDR</p>
+            <div id="pipeList-risk" class="space-y-2 max-h-72 overflow-y-auto"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ QUALITY & STRIKES TAB ============ -->
+      <div id="tab-quality" class="tab-content hidden fade-in">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <!-- Incentives -->
+          <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="text-sm font-semibold text-gray-900 mb-2">Incentives</h3>
+            <p class="text-xs text-gray-500 mb-5">Promoted contributors (L10+) earn rewards for quality work</p>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+              <div class="bg-green-50 border border-green-200 rounded-xl p-5 text-center">
+                <p class="text-sm font-semibold text-green-700">Carrots</p>
+                <p class="text-xs text-green-600 mt-1">Earned for every QC pass</p>
+                <p class="text-3xl font-bold text-green-900 mt-3" id="total-clean">0</p>
+                <p class="text-xs text-green-600 mt-1">CBs with 0% PDR</p>
+              </div>
+              <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-5 text-center">
+                <p class="text-sm font-semibold text-emerald-700">Better Missions</p>
+                <p class="text-xs text-emerald-600 mt-1">Higher-quality assignments</p>
+                <p class="text-3xl font-bold text-emerald-900 mt-3" id="total-trusted">0</p>
+                <p class="text-xs text-emerald-600 mt-1">Skillbench trusted</p>
+              </div>
+            </div>
+            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Top Performers (Best QMS)</h4>
+            <div id="topPerformers" class="space-y-2 max-h-48 overflow-y-auto"></div>
+          </div>
+
+          <!-- Strike System -->
+          <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="text-sm font-semibold text-gray-900 mb-2">Strike System</h3>
+            <p class="text-xs text-gray-500 mb-5">Two-strike policy for QC failures</p>
+            <div class="space-y-4 mb-6">
+              <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <div class="flex items-start gap-3">
+                  <div class="w-8 h-8 bg-amber-200 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="text-amber-800 font-bold text-sm">1</span>
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold text-amber-800">Strike 1 &mdash; QC Fail</p>
+                    <p class="text-xs text-amber-700 mt-1">Loses the mission for that cycle</p>
+                    <p class="text-xs text-amber-600">Keeps carrots &middot; Stays in program</p>
+                  </div>
+                </div>
+              </div>
+              <div class="flex justify-center">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+              </div>
+              <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+                <div class="flex items-start gap-3">
+                  <div class="w-8 h-8 bg-red-200 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="text-red-800 font-bold text-sm">2</span>
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold text-red-800">Strike 2 &mdash; 2nd QC Fail + Not Disputable</p>
+                    <p class="text-xs text-red-700 mt-1">Removed from program &middot; Returned to Reviewer L0</p>
+                  </div>
+                </div>
+              </div>
+              <div class="flex justify-center">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+              </div>
+              <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <div class="flex items-start gap-3">
+                  <div class="w-8 h-8 bg-blue-200 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-4 h-4 text-blue-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold text-blue-800">Recovery</p>
+                    <p class="text-xs text-blue-700 mt-1">Can re-enter after retraining &middot; Strikes reset on re-entry</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">High PDR Contributors (Strike Candidates)</h4>
+            <div id="strikeList" class="space-y-2 max-h-48 overflow-y-auto"></div>
+          </div>
+        </div>
+
+        <!-- QC vs QMS Scatter-like view -->
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+          <h3 class="text-sm font-semibold text-gray-900 mb-1">QC PDR vs QMS Score — All Contributors</h3>
+          <p class="text-xs text-gray-400 mb-4">Lower PDR + higher QMS = better. Green = promotion zone. Red = at risk.</p>
+          <div id="scatterView" class="flex flex-wrap gap-2"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Upload Modal -->
+  <div id="uploadModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onclick="hideUploadModal()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 relative">
+        <button onclick="hideUploadModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+        <h2 class="text-lg font-semibold text-gray-900 mb-1">Upload Redash CSV</h2>
+        <p class="text-sm text-gray-500 mb-5">Export from your Redash query and upload the CSV here.</p>
+        <div id="dropZone" class="drop-zone border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-green-400 hover:bg-green-50/30 transition-colors mb-4"
+             onclick="document.getElementById('fileInput').click()"
+             ondragover="event.preventDefault(); this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')"
+             ondrop="event.preventDefault(); this.classList.remove('drag-over'); handleFile(event.dataTransfer.files[0])">
+          <svg class="w-10 h-10 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+          <p class="text-sm font-medium text-gray-700">Drop your CSV file here</p>
+          <p class="text-xs text-gray-500 mt-1">or click to browse</p>
+          <input type="file" id="fileInput" accept=".csv" class="hidden" onchange="handleFile(this.files[0])">
+        </div>
+        <div id="uploadStatus" class="hidden mb-4">
+          <div class="flex items-center gap-2 text-sm">
+            <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span id="uploadFileName" class="text-gray-700 font-medium"></span>
+          </div>
+        </div>
+        <details class="bg-gray-50 rounded-lg p-4">
+          <summary class="text-xs font-semibold text-gray-600 cursor-pointer">Expected columns (from Redash query)</summary>
+          <code class="text-xs text-gray-500 block mt-2 break-all">email, name, contributor_id, discourse_id, direct_assigned_project, chose_project, review_level, disabled, tag, qc_n, qc_pdr, last_3_pdr, n_qms, avg_qms, last_3_qms, tp_l7d, tp_day_6..tp_day_0, avg_tp, active_rate</code>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div id="detailModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onclick="hideDetailModal()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 relative max-h-[90vh] overflow-y-auto" id="detailContent"></div>
+    </div>
+  </div>
+
+  <script>
+    // ─── Column Config ───
+    const ALL_COLUMNS = [
+      { key: 'name',          label: 'Name',          on: true,  sortable: true,  group: 'Identity' },
+      { key: 'contributor_id',label: 'CB ID',         on: false, sortable: true,  group: 'Identity' },
+      { key: 'email',         label: 'Email',         on: false, sortable: true,  group: 'Identity' },
+      { key: 'discourse_id',  label: 'Discourse ID',  on: false, sortable: true,  group: 'Identity' },
+      { key: 'review_level',  label: 'Level',         on: true,  sortable: true,  group: 'Status' },
+      { key: 'status',        label: 'Status',        on: true,  sortable: true,  group: 'Status' },
+      { key: 'project',       label: 'Project',       on: false, sortable: true,  group: 'Status' },
+      { key: 'tag',           label: 'Tag',           on: true,  sortable: true,  group: 'Status' },
+      { key: 'qc_n',          label: 'QC Audits',     on: true,  sortable: true,  group: 'QC' },
+      { key: 'qc_pdr',        label: 'QC PDR',        on: true,  sortable: true,  group: 'QC' },
+      { key: 'last_3_pdr',    label: 'Last 3 PDR',    on: true,  sortable: true,  group: 'QC' },
+      { key: 'n_qms',         label: '# QMS',         on: true,  sortable: true,  group: 'QMS' },
+      { key: 'avg_qms',       label: 'Avg QMS',       on: true,  sortable: true,  group: 'QMS' },
+      { key: 'last_3_qms',    label: 'Last 3 QMS',    on: true,  sortable: true,  group: 'QMS' },
+      { key: 'tp_l7d',        label: 'TP (7d)',       on: true,  sortable: true,  group: 'Throughput' },
+      { key: 'avg_tp',        label: 'Avg TP/day',    on: true,  sortable: true,  group: 'Throughput' },
+      { key: 'spark',         label: '7d Spark',      on: true,  sortable: false, group: 'Throughput' },
+      { key: 'active_rate',   label: 'Activity',      on: true,  sortable: true,  group: 'Throughput' },
+    ];
+
+    function getVisibleColumns() { return ALL_COLUMNS.filter(c => c.on); }
+
+    // ─── State ───
+    let contributors = [];
+    let filteredData = [];
+    let sortField = 'name';
+    let sortDir = 'asc';
+    let currentPage = 1;
+    const pageSize = 20;
+
+    // ─── CSV Parsing ───
+    function parseCSV(text) {
+      const lines = text.trim().split('\n');
+      if (lines.length < 2) return [];
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/\s+/g, '_'));
+      return lines.slice(1).filter(l => l.trim()).map(line => {
+        const values = [];
+        let current = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"') { inQuotes = !inQuotes; }
+          else if (ch === ',' && !inQuotes) { values.push(current.trim()); current = ''; }
+          else { current += ch; }
+        }
+        values.push(current.trim());
+        const obj = {};
+        headers.forEach((h, i) => { obj[h] = values[i] || ''; });
+        const num = k => { const v = parseFloat(obj[k]); return isNaN(v) ? null : v; };
+        obj.qc_n = num('qc_n');
+        obj.qc_pdr = num('qc_pdr');
+        obj.last_3_pdr = num('last_3_pdr');
+        obj.n_qms = num('n_qms');
+        obj.avg_qms = num('avg_qms');
+        obj.last_3_qms = num('last_3_qms');
+        obj.tp_l7d = num('tp_l7d');
+        obj.tp_day_0 = num('tp_day_0');
+        obj.tp_day_1 = num('tp_day_1');
+        obj.tp_day_2 = num('tp_day_2');
+        obj.tp_day_3 = num('tp_day_3');
+        obj.tp_day_4 = num('tp_day_4');
+        obj.tp_day_5 = num('tp_day_5');
+        obj.tp_day_6 = num('tp_day_6');
+        obj.avg_tp = num('avg_tp');
+        obj.active_rate = num('active_rate');
+        obj.disabled = obj.disabled === 'true' || obj.disabled === 'TRUE' || obj.disabled === '1' || obj.disabled === 't';
+        // Normalize review_level: Redash outputs numeric (0, 10, 12) — prefix "L" if missing
+        if (obj.review_level && !String(obj.review_level).toUpperCase().startsWith('L')) {
+          obj.review_level = 'L' + obj.review_level;
+        }
+        if (obj.review_level) obj.review_level = obj.review_level.toUpperCase();
+        return obj;
+      });
+    }
+
+    function handleFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        contributors = parseCSV(e.target.result);
+        if (contributors.length > 0) {
+          populateLevelFilter();
+          document.getElementById('uploadStatus').classList.remove('hidden');
+          document.getElementById('uploadFileName').textContent = `${file.name} — ${contributors.length} contributors loaded`;
+          setTimeout(() => { hideUploadModal(); renderAll(); }, 600);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function populateLevelFilter() {
+      const levels = [...new Set(contributors.map(c => c.review_level).filter(Boolean))].sort();
+      const sel = document.getElementById('filterLevel');
+      sel.innerHTML = '<option value="">All Levels</option>' + levels.map(l => `<option value="${l}">${l}</option>`).join('');
+    }
+
+    // ─── Helpers ───
+    function pct(v) { return v != null ? (v * 100).toFixed(1) + '%' : '—'; }
+    function fmt(v, d=1) { return v != null ? v.toFixed(d) : '—'; }
+    function initials(name) { return (name || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase(); }
+
+    function pdrColor(v) {
+      if (v == null) return 'text-gray-400';
+      if (v === 0) return 'text-green-600';
+      if (v < 0.2) return 'text-amber-600';
+      return 'text-red-600';
+    }
+    function pdrBg(v) {
+      if (v == null) return 'bg-gray-100 text-gray-500';
+      if (v === 0) return 'bg-green-100 text-green-700';
+      if (v < 0.2) return 'bg-amber-100 text-amber-700';
+      return 'bg-red-100 text-red-700';
+    }
+    function qmsBg(v) {
+      if (v == null) return 'bg-gray-100 text-gray-500';
+      if (v >= 4) return 'bg-green-100 text-green-700';
+      if (v >= 3) return 'bg-amber-100 text-amber-700';
+      return 'bg-red-100 text-red-700';
+    }
+    function activityBg(v) {
+      if (v == null) return 'bg-gray-100 text-gray-500';
+      if (v >= 0.5) return 'bg-green-100 text-green-700';
+      if (v >= 0.3) return 'bg-amber-100 text-amber-700';
+      return 'bg-red-100 text-red-700';
+    }
+    function roleInfo(level) {
+      const l = (level || '').toUpperCase();
+      if (l === 'L0') return { label: 'Reviewer', cls: 'bg-green-100 text-green-700', desc: 'Reviews attempt tasks' };
+      if (l === 'L10') return { label: 'Reviewer + QM', cls: 'bg-blue-100 text-blue-700', desc: 'Reviews tasks & does QM checks' };
+      if (l === 'L12') return { label: 'Super-Attempter', cls: 'bg-purple-100 text-purple-700', desc: 'Promoted — attempts high-quality tasks' };
+      return { label: 'Attempter', cls: 'bg-gray-100 text-gray-600', desc: 'Submits attempt tasks' };
+    }
+    function derivedStatus(c) {
+      if (c.disabled) return { label: 'Disabled', cls: 'bg-red-100 text-red-700' };
+      if (c.active_rate != null && c.active_rate < 0.15) return { label: 'Very Low Activity', cls: 'bg-red-100 text-red-700' };
+      if (c.active_rate != null && c.active_rate < 0.3) return { label: 'Low Activity', cls: 'bg-amber-100 text-amber-700' };
+      if (c.qc_pdr != null && c.qc_pdr >= 0.4) return { label: 'High PDR', cls: 'bg-red-100 text-red-700' };
+      if (c.qc_pdr != null && c.qc_pdr >= 0.2) return { label: 'Moderate PDR', cls: 'bg-amber-100 text-amber-700' };
+      return { label: 'Active', cls: 'bg-green-100 text-green-700' };
+    }
+    function sparkline(c) {
+      const days = [c.tp_day_6, c.tp_day_5, c.tp_day_4, c.tp_day_3, c.tp_day_2, c.tp_day_1, c.tp_day_0];
+      const max = Math.max(...days.map(d => d || 0), 1);
+      return '<div class="spark-bar">' + days.map(d => {
+        const h = d != null ? Math.max(2, (d / max) * 20) : 2;
+        const color = d > 0 ? 'bg-green-500' : 'bg-gray-200';
+        return `<span class="${color}" style="height:${h}px"></span>`;
+      }).join('') + '</div>';
+    }
+
+    // ─── Column Toggles ───
+    function renderColToggles() {
+      document.getElementById('colToggles').innerHTML = ALL_COLUMNS.map(col => `
+        <button onclick="toggleCol('${col.key}')" class="px-2 py-0.5 text-[11px] rounded-full border transition-colors ${col.on ? 'bg-green-100 border-green-300 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-400 hover:text-gray-600'}">${col.label}</button>
+      `).join('');
+    }
+    function toggleCol(key) {
+      const col = ALL_COLUMNS.find(c => c.key === key);
+      if (col) { col.on = !col.on; renderColToggles(); renderTableHeader(); renderTable(); }
+    }
+    function renderTableHeader() {
+      const cols = getVisibleColumns();
+      document.getElementById('tableHeader').innerHTML = cols.map(col => {
+        if (col.sortable) {
+          return `<th class="text-left px-3 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide cursor-pointer hover:text-gray-700 whitespace-nowrap" onclick="sortTable('${col.key === 'status' ? 'disabled' : col.key}')">${col.label} <span id="sort-${col.key === 'status' ? 'disabled' : col.key}" class="text-gray-400"></span></th>`;
+        }
+        return `<th class="text-left px-3 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">${col.label}</th>`;
+      }).join('');
+    }
+
+    // ─── Render All ───
+    function renderAll() {
+      document.getElementById('emptyState').style.display = contributors.length ? 'none' : 'flex';
+      document.getElementById('exportBtn').style.display = contributors.length ? 'inline-flex' : 'none';
+      const info = document.getElementById('dataInfo');
+      if (contributors.length) { info.textContent = `${contributors.length} contributors loaded`; info.classList.remove('hidden'); }
+      else { info.classList.add('hidden'); }
+      document.querySelectorAll('.tab-content').forEach(el => { if (!contributors.length) el.classList.add('hidden'); });
+      if (!contributors.length) return;
+      const activeTab = document.querySelector('.tab-btn.border-green-500')?.dataset.tab || 'dashboard';
+      document.getElementById(`tab-${activeTab}`).classList.remove('hidden');
+      renderColToggles();
+      renderTableHeader();
+      renderMetrics();
+      renderLevelChart();
+      renderPDRChart();
+      renderPromotionReady();
+      renderNeedsAttention();
+      filterContributors();
+      renderPipeline();
+      renderQuality();
+    }
+
+    // ─── Dashboard Metrics ───
+    function renderMetrics() {
+      const total = contributors.length;
+      const active = contributors.filter(c => !c.disabled && (c.active_rate == null || c.active_rate >= 0.3)).length;
+      const inactive = contributors.filter(c => !c.disabled && c.active_rate != null && c.active_rate < 0.3).length;
+      const disabled = contributors.filter(c => c.disabled).length;
+      const pdrs = contributors.filter(c => c.qc_pdr != null);
+      const avgPdr = pdrs.length ? pdrs.reduce((s, c) => s + c.qc_pdr, 0) / pdrs.length : 0;
+      const tps = contributors.filter(c => c.avg_tp != null);
+      const avgTp = tps.length ? tps.reduce((s, c) => s + c.avg_tp, 0) / tps.length : 0;
+
+      document.getElementById('m-total').textContent = total;
+      document.getElementById('m-active').textContent = active;
+      document.getElementById('m-inactive').textContent = inactive;
+      document.getElementById('m-disabled').textContent = disabled;
+      document.getElementById('m-avgpdr').textContent = (avgPdr * 100).toFixed(1) + '%';
+      document.getElementById('m-avgtp').textContent = avgTp.toFixed(1) + '/d';
+    }
+
+    // ─── Level Chart ───
+    function renderLevelChart() {
+      const counts = {};
+      contributors.forEach(c => { const l = c.review_level || 'Unknown'; counts[l] = (counts[l] || 0) + 1; });
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      const max = Math.max(...sorted.map(([,v]) => v), 1);
+      const colors = ['bg-blue-500','bg-green-500','bg-purple-500','bg-amber-500','bg-red-500','bg-gray-500'];
+      document.getElementById('levelChart').innerHTML = sorted.map(([level, count], i) => `
+        <div class="flex items-center gap-3 cursor-pointer hover:opacity-80" onclick="navigateToLevel('${level}')">
+          <span class="text-xs font-medium text-gray-600 w-16 truncate">${level}</span>
+          <div class="flex-1 bg-gray-100 rounded-full h-6 overflow-hidden">
+            <div class="${colors[i % colors.length]} h-full rounded-full transition-all duration-700 flex items-center px-2" style="width:${(count/max)*100}%">
+              <span class="text-xs font-medium text-white">${count}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ─── PDR Chart ───
+    function renderPDRChart() {
+      const buckets = { 'Clean (0%)': 0, 'Low (1-19%)': 0, 'Moderate (20-39%)': 0, 'High (40%+)': 0, 'No QC': 0 };
+      const pdrKeys = { 'Clean (0%)': 'clean', 'Low (1-19%)': 'low', 'Moderate (20-39%)': 'mid', 'High (40%+)': 'high', 'No QC': '' };
+      contributors.forEach(c => {
+        if (c.qc_pdr == null || c.qc_n == null || c.qc_n === 0) buckets['No QC']++;
+        else if (c.qc_pdr === 0) buckets['Clean (0%)']++;
+        else if (c.qc_pdr < 0.2) buckets['Low (1-19%)']++;
+        else if (c.qc_pdr < 0.4) buckets['Moderate (20-39%)']++;
+        else buckets['High (40%+)']++;
+      });
+      const max = Math.max(...Object.values(buckets), 1);
+      const colors = { 'Clean (0%)': 'bg-green-500', 'Low (1-19%)': 'bg-blue-500', 'Moderate (20-39%)': 'bg-amber-500', 'High (40%+)': 'bg-red-500', 'No QC': 'bg-gray-400' };
+      document.getElementById('pdrChart').innerHTML = Object.entries(buckets).map(([label, count]) => `
+        <div class="flex items-center gap-3 cursor-pointer hover:opacity-80" onclick="navigateToPDR('${pdrKeys[label]}')">
+          <span class="text-xs font-medium text-gray-600 w-28 truncate">${label}</span>
+          <div class="flex-1 bg-gray-100 rounded-full h-6 overflow-hidden">
+            <div class="${colors[label]} h-full rounded-full transition-all duration-700 flex items-center px-2" style="width:${(count/max)*100}%">
+              <span class="text-xs font-medium text-white">${count}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ─── Promotion Ready ───
+    function renderPromotionReady() {
+      const ready = contributors.filter(c =>
+        !c.disabled &&
+        c.qc_pdr != null && c.qc_pdr < 0.2 &&
+        c.avg_qms != null && c.avg_qms >= 4 &&
+        c.active_rate != null && c.active_rate >= 0.3
+      ).sort((a, b) => (a.qc_pdr || 0) - (b.qc_pdr || 0)).slice(0, 10);
+      const el = document.getElementById('promotionReady');
+      el.innerHTML = ready.length === 0
+        ? '<p class="text-sm text-gray-400 py-4 text-center">No contributors meeting all promotion criteria</p>'
+        : ready.map(c => `
+          <div class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer" onclick="showDetail('${c.contributor_id}')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-xs font-bold text-green-700">${initials(c.name)}</div>
+              <div>
+                <p class="text-sm font-medium text-gray-900">${c.name}</p>
+                <p class="text-xs text-gray-500">${c.review_level || '—'} &middot; PDR: ${pct(c.qc_pdr)} &middot; QMS: ${fmt(c.avg_qms)}</p>
+              </div>
+            </div>
+            <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">Ready</span>
+          </div>
+        `).join('');
+    }
+
+    // ─── Needs Attention ───
+    function renderNeedsAttention() {
+      const attention = contributors.filter(c =>
+        c.disabled ||
+        (c.active_rate != null && c.active_rate < 0.15) ||
+        (c.qc_pdr != null && c.qc_pdr >= 0.4) ||
+        (c.last_3_pdr != null && c.qc_pdr != null && c.last_3_pdr > c.qc_pdr + 0.1) ||
+        (c.last_3_qms != null && c.avg_qms != null && c.last_3_qms < c.avg_qms - 0.5)
+      ).sort((a, b) => (b.qc_pdr || 0) - (a.qc_pdr || 0)).slice(0, 10);
+      const el = document.getElementById('needsAttention');
+      el.innerHTML = attention.length === 0
+        ? '<p class="text-sm text-gray-400 py-4 text-center">Everyone is performing well</p>'
+        : attention.map(c => {
+          let reason = '';
+          if (c.disabled) reason = 'Disabled';
+          else if (c.active_rate != null && c.active_rate < 0.15) reason = 'Very low activity';
+          else if (c.qc_pdr != null && c.qc_pdr >= 0.4) reason = `High PDR (${pct(c.qc_pdr)})`;
+          else if (c.last_3_pdr != null && c.qc_pdr != null && c.last_3_pdr > c.qc_pdr + 0.1) reason = `PDR trending up (${pct(c.last_3_pdr)})`;
+          else reason = `QMS declining (${fmt(c.last_3_qms)})`;
+          return `
+            <div class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer" onclick="showDetail('${c.contributor_id}')">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-xs font-bold text-red-700">${initials(c.name)}</div>
+                <div>
+                  <p class="text-sm font-medium text-gray-900">${c.name}</p>
+                  <p class="text-xs text-gray-500">${c.review_level || '—'}</p>
+                </div>
+              </div>
+              <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700">${reason}</span>
+            </div>
+          `;
+        }).join('');
+    }
+
+    // ─── Contributors Table ───
+    function filterContributors() {
+      const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
+      const level = document.getElementById('filterLevel')?.value || '';
+      const status = document.getElementById('filterStatus')?.value || '';
+      const pdrFilter = document.getElementById('filterPDR')?.value || '';
+
+      filteredData = contributors.filter(c => {
+        if (search && !(c.name||'').toLowerCase().includes(search) && !(c.email||'').toLowerCase().includes(search) && !(c.contributor_id||'').toLowerCase().includes(search)) return false;
+        if (level && c.review_level !== level) return false;
+        if (status === 'active_good' && (c.disabled || c.qc_pdr == null || c.qc_pdr >= 0.2)) return false;
+        if (status === 'active_risky' && (c.disabled || c.qc_pdr == null || c.qc_pdr < 0.2)) return false;
+        if (status === 'low_activity' && (c.active_rate == null || c.active_rate >= 0.3)) return false;
+        if (status === 'disabled' && !c.disabled) return false;
+        if (status === 'trusted' && c.tag !== 'skillbench_trusted') return false;
+        if (pdrFilter === 'clean' && (c.qc_pdr == null || c.qc_pdr !== 0)) return false;
+        if (pdrFilter === 'low' && (c.qc_pdr == null || c.qc_pdr === 0 || c.qc_pdr >= 0.2)) return false;
+        if (pdrFilter === 'mid' && (c.qc_pdr == null || c.qc_pdr < 0.2 || c.qc_pdr >= 0.4)) return false;
+        if (pdrFilter === 'high' && (c.qc_pdr == null || c.qc_pdr < 0.4)) return false;
+        return true;
+      });
+
+      filteredData.sort((a, b) => {
+        let va = a[sortField], vb = b[sortField];
+        if (va == null && vb == null) return 0;
+        if (va == null) return 1;
+        if (vb == null) return -1;
+        if (typeof va === 'string') { va = va.toLowerCase(); vb = (vb||'').toLowerCase(); }
+        if (va < vb) return sortDir === 'asc' ? -1 : 1;
+        if (va > vb) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+      });
+      currentPage = 1;
+      renderTable();
+    }
+
+    function sortTable(field) {
+      if (sortField === field) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      else { sortField = field; sortDir = 'asc'; }
+      document.querySelectorAll('[id^="sort-"]').forEach(el => el.textContent = '');
+      const sortEl = document.getElementById(`sort-${field}`);
+      if (sortEl) sortEl.textContent = sortDir === 'asc' ? '↑' : '↓';
+      filterContributors();
+    }
+
+    function cellHtml(col, c) {
+      const st = derivedStatus(c);
+      switch (col.key) {
+        case 'name':
+          return `<div class="flex items-center gap-2">
+            <div class="w-7 h-7 bg-gray-100 rounded-full flex items-center justify-center text-[10px] font-medium text-gray-600">${initials(c.name)}</div>
+            <span class="text-sm font-medium text-gray-900">${c.name || '—'}</span></div>`;
+        case 'contributor_id':
+          return `<span class="text-xs text-gray-600 font-mono">${c.contributor_id || '—'}</span>`;
+        case 'email':
+          return `<span class="text-xs text-gray-600">${c.email || '—'}</span>`;
+        case 'discourse_id':
+          return `<span class="text-xs text-gray-600 font-mono">${c.discourse_id || '—'}</span>`;
+        case 'review_level':
+          const ri = roleInfo(c.review_level);
+          return `<span class="text-xs font-semibold px-2 py-0.5 rounded bg-gray-100 text-gray-700">${c.review_level || '—'}</span> <span class="text-[10px] font-medium px-1.5 py-0.5 rounded ${ri.cls}">${ri.label}</span>`;
+        case 'status':
+          return `<span class="text-xs font-medium px-2 py-0.5 rounded-full ${st.cls}">${st.label}</span>`;
+        case 'project':
+          return `<span class="text-xs text-gray-600 truncate max-w-[120px] inline-block">${c.direct_assigned_project || c.chose_project || '—'}</span>`;
+        case 'tag':
+          return c.tag === 'skillbench_trusted' ? '<span class="text-xs font-medium px-2 py-0.5 rounded bg-purple-100 text-purple-700">Trusted</span>' : '<span class="text-xs text-gray-400">—</span>';
+        case 'qc_n':
+          return `<span class="text-sm text-gray-600">${c.qc_n != null ? c.qc_n : '—'}</span>`;
+        case 'qc_pdr':
+          return `<span class="text-sm font-medium ${pdrColor(c.qc_pdr)}">${pct(c.qc_pdr)}</span>`;
+        case 'last_3_pdr':
+          return `<span class="text-sm font-medium ${pdrColor(c.last_3_pdr)}">${pct(c.last_3_pdr)}</span>${c.last_3_pdr != null && c.qc_pdr != null ? (c.last_3_pdr > c.qc_pdr + 0.05 ? '<span class="text-red-500 text-xs ml-1">↑</span>' : c.last_3_pdr < c.qc_pdr - 0.05 ? '<span class="text-green-500 text-xs ml-1">↓</span>' : '') : ''}`;
+        case 'n_qms':
+          return `<span class="text-sm text-gray-600">${c.n_qms != null ? c.n_qms : '—'}</span>`;
+        case 'avg_qms':
+          return `<span class="text-xs font-medium px-2 py-0.5 rounded ${qmsBg(c.avg_qms)}">${fmt(c.avg_qms)}</span>`;
+        case 'last_3_qms':
+          return `<span class="text-xs font-medium px-2 py-0.5 rounded ${qmsBg(c.last_3_qms)}">${fmt(c.last_3_qms)}</span>${c.last_3_qms != null && c.avg_qms != null ? (c.last_3_qms < c.avg_qms - 0.3 ? '<span class="text-red-500 text-xs ml-1">↓</span>' : c.last_3_qms > c.avg_qms + 0.3 ? '<span class="text-green-500 text-xs ml-1">↑</span>' : '') : ''}`;
+        case 'tp_l7d':
+          return `<span class="text-sm text-gray-700 font-medium">${c.tp_l7d != null ? c.tp_l7d : '—'}</span>`;
+        case 'avg_tp':
+          return `<span class="text-sm text-gray-600">${c.avg_tp != null ? c.avg_tp : '—'}</span>`;
+        case 'spark':
+          return sparkline(c);
+        case 'active_rate':
+          return `<span class="text-xs font-medium px-2 py-0.5 rounded ${activityBg(c.active_rate)}">${c.active_rate != null ? (c.active_rate * 100).toFixed(0) + '%' : '—'}</span>`;
+        default:
+          return `<span class="text-xs text-gray-500">${c[col.key] || '—'}</span>`;
+      }
+    }
+
+    function renderTable() {
+      const start = (currentPage - 1) * pageSize;
+      const page = filteredData.slice(start, start + pageSize);
+      const cols = getVisibleColumns();
+      document.getElementById('contributorTableBody').innerHTML = page.map(c => {
+        return `<tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="showDetail('${c.contributor_id}')">
+          ${cols.map(col => `<td class="px-3 py-2.5 whitespace-nowrap">${cellHtml(col, c)}</td>`).join('')}
+        </tr>`;
+      }).join('');
+
+      const end = Math.min(start + pageSize, filteredData.length);
+      document.getElementById('tableCount').textContent = filteredData.length === 0 ? 'No matching contributors' : `Showing ${start + 1}–${end} of ${filteredData.length}`;
+      renderPagination();
+    }
+
+    function renderPagination() {
+      const totalPages = Math.ceil(filteredData.length / pageSize);
+      if (totalPages <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+      let html = '';
+      const start = Math.max(1, currentPage - 2);
+      const end = Math.min(totalPages, currentPage + 2);
+      if (start > 1) html += `<button onclick="goPage(1)" class="px-2.5 py-1 text-xs rounded bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">1</button>`;
+      if (start > 2) html += `<span class="text-gray-400 text-xs px-1">...</span>`;
+      for (let i = start; i <= end; i++) {
+        html += `<button onclick="goPage(${i})" class="px-2.5 py-1 text-xs rounded ${i === currentPage ? 'bg-green-600 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}">${i}</button>`;
+      }
+      if (end < totalPages - 1) html += `<span class="text-gray-400 text-xs px-1">...</span>`;
+      if (end < totalPages) html += `<button onclick="goPage(${totalPages})" class="px-2.5 py-1 text-xs rounded bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">${totalPages}</button>`;
+      document.getElementById('pagination').innerHTML = html;
+    }
+    function goPage(p) { currentPage = p; renderTable(); }
+
+    // ─── Pipeline ───
+    function renderPipeline() {
+      const levels = {};
+      contributors.forEach(c => { const l = c.review_level || 'Unknown'; levels[l] = (levels[l] || 0) + 1; });
+      document.getElementById('pipe-all').textContent = contributors.length;
+      document.getElementById('pipe-l0').textContent = levels['L0'] || levels['l0'] || 0;
+      document.getElementById('pipe-l10').textContent = levels['L10'] || levels['l10'] || 0;
+      document.getElementById('pipe-l12').textContent = levels['L12'] || levels['l12'] || 0;
+
+      const candidates = contributors.filter(c => !c.disabled && c.qc_pdr != null && c.qc_pdr < 0.2 && c.avg_qms != null && c.avg_qms >= 4 && c.active_rate != null && c.active_rate >= 0.3)
+        .sort((a, b) => (a.qc_pdr || 0) - (b.qc_pdr || 0));
+      const coaching = contributors.filter(c => !c.disabled && ((c.qc_pdr != null && c.qc_pdr >= 0.2 && c.qc_pdr < 0.4) || (c.last_3_qms != null && c.avg_qms != null && c.last_3_qms < c.avg_qms - 0.5)))
+        .sort((a, b) => (b.qc_pdr || 0) - (a.qc_pdr || 0));
+      const risk = contributors.filter(c => c.disabled || (c.qc_pdr != null && c.qc_pdr >= 0.4) || (c.active_rate != null && c.active_rate < 0.15))
+        .sort((a, b) => (b.qc_pdr || 0) - (a.qc_pdr || 0));
+
+      const renderList = (id, items, emptyMsg) => {
+        document.getElementById(id).innerHTML = items.length === 0
+          ? `<p class="text-xs text-gray-400 py-2">${emptyMsg}</p>`
+          : items.slice(0, 15).map(c => {
+            const ri = roleInfo(c.review_level);
+            return `
+            <div class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-gray-50 text-sm cursor-pointer" onclick="showDetail('${c.contributor_id}')">
+              <div class="flex items-center gap-2 truncate mr-2">
+                <span class="text-gray-700 truncate">${c.name}</span>
+                <span class="text-[10px] font-medium px-1.5 py-0.5 rounded ${ri.cls}">${ri.label}</span>
+              </div>
+              <span class="text-xs text-gray-500 whitespace-nowrap">PDR ${pct(c.qc_pdr)} · QMS ${fmt(c.avg_qms)}</span>
+            </div>`;
+          }).join('');
+      };
+      renderList('pipeList-candidates', candidates, 'No promotion candidates yet');
+      renderList('pipeList-coaching', coaching, 'No one needs coaching');
+      renderList('pipeList-risk', risk, 'No at-risk contributors');
+    }
+
+    // ─── Quality & Strikes ───
+    function renderQuality() {
+      const clean = contributors.filter(c => c.qc_pdr != null && c.qc_pdr === 0 && c.qc_n > 0).length;
+      const trusted = contributors.filter(c => c.tag === 'skillbench_trusted').length;
+      document.getElementById('total-clean').textContent = clean;
+      document.getElementById('total-trusted').textContent = trusted;
+
+      const top = [...contributors].filter(c => c.avg_qms != null).sort((a, b) => b.avg_qms - a.avg_qms).slice(0, 6);
+      document.getElementById('topPerformers').innerHTML = top.map((c, i) => `
+        <div class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-gray-50 cursor-pointer" onclick="showDetail('${c.contributor_id}')">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-medium text-gray-400 w-4">${i + 1}.</span>
+            <span class="text-sm text-gray-700">${c.name}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs ${pdrBg(c.qc_pdr)} px-1.5 py-0.5 rounded">PDR ${pct(c.qc_pdr)}</span>
+            <span class="text-xs ${qmsBg(c.avg_qms)} px-1.5 py-0.5 rounded">QMS ${fmt(c.avg_qms)}</span>
+          </div>
+        </div>
+      `).join('');
+
+      const highPdr = contributors.filter(c => c.qc_pdr != null && c.qc_pdr >= 0.3).sort((a, b) => b.qc_pdr - a.qc_pdr);
+      document.getElementById('strikeList').innerHTML = highPdr.length === 0
+        ? '<p class="text-xs text-gray-400 py-2">No high-PDR contributors</p>'
+        : highPdr.map(c => `
+          <div class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer" onclick="showDetail('${c.contributor_id}')">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 bg-red-100 text-red-700 rounded-full flex items-center justify-center text-[10px] font-bold">${pct(c.qc_pdr)}</div>
+              <span class="text-sm text-gray-700">${c.name}</span>
+            </div>
+            <span class="text-xs text-gray-500">${c.review_level || '—'} · ${c.qc_n || 0} audits</span>
+          </div>
+        `).join('');
+
+      // Scatter-like view
+      const withData = contributors.filter(c => c.qc_pdr != null && c.avg_qms != null);
+      document.getElementById('scatterView').innerHTML = withData.map(c => {
+        const bg = (c.qc_pdr < 0.2 && c.avg_qms >= 4) ? 'bg-green-200 border-green-400 text-green-800'
+          : (c.qc_pdr >= 0.4 || c.avg_qms < 3) ? 'bg-red-200 border-red-400 text-red-800'
+          : 'bg-amber-100 border-amber-300 text-amber-800';
+        return `<div class="border rounded-lg px-2 py-1 text-[10px] font-medium ${bg} cursor-pointer hover:opacity-80" onclick="showDetail('${c.contributor_id}')" title="${c.name}\nPDR: ${pct(c.qc_pdr)} | QMS: ${fmt(c.avg_qms)}">${initials(c.name)}</div>`;
+      }).join('');
+    }
+
+    // ─── Detail Modal ───
+    function showDetail(cid) {
+      const c = contributors.find(x => x.contributor_id === cid);
+      if (!c) return;
+      const st = derivedStatus(c);
+      document.getElementById('detailContent').innerHTML = `
+        <button onclick="hideDetailModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-lg font-bold text-green-700">${initials(c.name)}</div>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">${c.name || '—'}</h3>
+            <p class="text-sm text-gray-500">${c.email || ''}</p>
+            <p class="text-xs text-gray-400 font-mono">${c.contributor_id || ''} ${c.discourse_id ? '· Discourse: ' + c.discourse_id : ''}</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 mb-5">
+          <span class="text-xs font-semibold px-2.5 py-1 rounded bg-gray-100 text-gray-700">${c.review_level || '—'}</span>
+          <span class="text-xs font-medium px-2.5 py-1 rounded-full ${roleInfo(c.review_level).cls}">${roleInfo(c.review_level).label}</span>
+          <span class="text-xs font-medium px-2.5 py-1 rounded-full ${st.cls}">${st.label}</span>
+          ${c.tag === 'skillbench_trusted' ? '<span class="text-xs font-medium px-2.5 py-1 rounded bg-purple-100 text-purple-700">Skillbench Trusted</span>' : ''}
+          ${c.disabled ? '<span class="text-xs font-medium px-2.5 py-1 rounded bg-red-100 text-red-700">Disabled</span>' : ''}
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <div class="bg-gray-50 rounded-lg p-3">
+            <p class="text-xs text-gray-500">QC Audits</p>
+            <p class="text-lg font-bold text-gray-900">${c.qc_n != null ? c.qc_n : '—'}</p>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3">
+            <p class="text-xs text-gray-500">QC PDR (overall)</p>
+            <p class="text-lg font-bold ${pdrColor(c.qc_pdr)}">${pct(c.qc_pdr)}</p>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3">
+            <p class="text-xs text-gray-500">Last 3 QC PDR</p>
+            <p class="text-lg font-bold ${pdrColor(c.last_3_pdr)}">${pct(c.last_3_pdr)}</p>
+            ${c.last_3_pdr != null && c.qc_pdr != null ? `<p class="text-xs mt-1 ${c.last_3_pdr > c.qc_pdr + 0.05 ? 'text-red-500' : c.last_3_pdr < c.qc_pdr - 0.05 ? 'text-green-500' : 'text-gray-400'}">${c.last_3_pdr > c.qc_pdr + 0.05 ? '↑ Trending worse' : c.last_3_pdr < c.qc_pdr - 0.05 ? '↓ Improving' : '→ Stable'}</p>` : ''}
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3">
+            <p class="text-xs text-gray-500">Avg QMS (${c.n_qms || 0} ratings)</p>
+            <p class="text-lg font-bold ${c.avg_qms != null && c.avg_qms >= 4 ? 'text-green-600' : c.avg_qms != null && c.avg_qms >= 3 ? 'text-amber-600' : 'text-red-600'}">${fmt(c.avg_qms)}</p>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3">
+            <p class="text-xs text-gray-500">Last 3 QMS</p>
+            <p class="text-lg font-bold ${c.last_3_qms != null && c.last_3_qms >= 4 ? 'text-green-600' : c.last_3_qms != null && c.last_3_qms >= 3 ? 'text-amber-600' : 'text-red-600'}">${fmt(c.last_3_qms)}</p>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3">
+            <p class="text-xs text-gray-500">Throughput (7d)</p>
+            <p class="text-lg font-bold text-gray-900">${c.tp_l7d != null ? c.tp_l7d : '—'}</p>
+            <p class="text-xs text-gray-400">${c.avg_tp != null ? c.avg_tp + '/day avg' : ''}</p>
+          </div>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-3 mb-4">
+          <p class="text-xs text-gray-500 mb-2">Daily Throughput (last 7 days)</p>
+          <div class="flex items-end gap-1 h-10">
+            ${[c.tp_day_6, c.tp_day_5, c.tp_day_4, c.tp_day_3, c.tp_day_2, c.tp_day_1, c.tp_day_0].map((d, i) => {
+              const max = Math.max(...[c.tp_day_6, c.tp_day_5, c.tp_day_4, c.tp_day_3, c.tp_day_2, c.tp_day_1, c.tp_day_0].map(x => x || 0), 1);
+              const h = d != null ? Math.max(4, (d / max) * 40) : 4;
+              const labels = ['-6d','-5d','-4d','-3d','-2d','-1d','Today'];
+              return `<div class="flex flex-col items-center gap-0.5 flex-1"><div class="${d > 0 ? 'bg-green-500' : 'bg-gray-200'} rounded-sm w-full" style="height:${h}px" title="${d || 0} tasks"></div><span class="text-[9px] text-gray-400">${labels[i]}</span></div>`;
+            }).join('')}
+          </div>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-3">
+          <p class="text-xs text-gray-500 mb-1">Activity Rate (7d)</p>
+          <div class="flex items-center gap-2">
+            <div class="flex-1 bg-gray-200 rounded-full h-2"><div class="${c.active_rate >= 0.5 ? 'bg-green-500' : c.active_rate >= 0.3 ? 'bg-amber-500' : 'bg-red-500'} h-2 rounded-full" style="width:${(c.active_rate || 0) * 100}%"></div></div>
+            <span class="text-sm font-semibold text-gray-700">${c.active_rate != null ? (c.active_rate * 100).toFixed(0) + '%' : '—'}</span>
+          </div>
+        </div>
+        ${c.direct_assigned_project || c.chose_project ? `<p class="text-xs text-gray-400 mt-3">Project: ${c.direct_assigned_project || c.chose_project || '—'}</p>` : ''}
+      `;
+      document.getElementById('detailModal').classList.remove('hidden');
+    }
+    function hideDetailModal() { document.getElementById('detailModal').classList.add('hidden'); }
+
+    // ─── Tabs ───
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-green-500', 'text-green-600');
+        btn.classList.add('border-transparent', 'text-gray-500');
+      });
+      document.querySelector(`[data-tab="${tab}"]`).classList.remove('border-transparent', 'text-gray-500');
+      document.querySelector(`[data-tab="${tab}"]`).classList.add('border-green-500', 'text-green-600');
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      if (contributors.length > 0) document.getElementById(`tab-${tab}`).classList.remove('hidden');
+    }
+
+    // ─── Navigation (clickable cards/pipeline) ───
+    function navigateToLevel(level) {
+      switchTab('contributors');
+      clearFilters();
+      document.getElementById('filterLevel').value = level;
+      filterContributors();
+    }
+    function navigateToStatus(status) {
+      switchTab('contributors');
+      clearFilters();
+      document.getElementById('filterStatus').value = status;
+      filterContributors();
+    }
+    function navigateToPDR(pdr) {
+      switchTab('contributors');
+      clearFilters();
+      document.getElementById('filterPDR').value = pdr;
+      filterContributors();
+    }
+
+    // ─── Modal ───
+    function showUploadModal() {
+      document.getElementById('uploadModal').classList.remove('hidden');
+      document.getElementById('uploadStatus').classList.add('hidden');
+    }
+    function hideUploadModal() { document.getElementById('uploadModal').classList.add('hidden'); }
+
+    function clearFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('filterLevel').value = '';
+      document.getElementById('filterStatus').value = '';
+      document.getElementById('filterPDR').value = '';
+      filterContributors();
+    }
+
+    // ─── Export ───
+    function exportData() {
+      const headers = ['name','email','contributor_id','discourse_id','review_level','disabled','tag','qc_n','qc_pdr','last_3_pdr','n_qms','avg_qms','last_3_qms','tp_l7d','tp_day_6','tp_day_5','tp_day_4','tp_day_3','tp_day_2','tp_day_1','tp_day_0','avg_tp','active_rate'];
+      const csv = [headers.join(','), ...contributors.map(c => headers.map(h => `"${(c[h] != null ? c[h] : '').toString().replace(/"/g, '""')}"`).join(','))].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `cb_progress_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+    }
+
+    // ─── Sample Data ───
+    function loadSampleData() {
+      const csv = `name,email,contributor_id,discourse_id,direct_assigned_project,chose_project,review_level,disabled,tag,qc_n,qc_pdr,last_3_pdr,n_qms,avg_qms,last_3_qms,tp_l7d,tp_day_6,tp_day_5,tp_day_4,tp_day_3,tp_day_2,tp_day_1,tp_day_0,avg_tp,active_rate
+Maria Garcia,maria.garcia@example.com,cb-001,disc-001,Project Alpha,,10,false,skillbench_trusted,15,0.0,0.0,8,4.6,4.8,28,4,5,3,4,5,3,4,4.0,1.0
+James Wilson,james.wilson@example.com,cb-002,disc-002,Project Alpha,,0,false,No Tag,8,0.125,0.0,4,3.8,4.0,14,2,3,2,0,3,2,2,2.0,0.86
+Sofia Martinez,sofia.martinez@example.com,cb-003,disc-003,Project Alpha,,12,false,skillbench_trusted,22,0.045,0.0,12,4.9,5.0,35,5,6,5,4,5,5,5,5.0,1.0
+Ahmed Hassan,ahmed.hassan@example.com,cb-004,disc-004,Project Alpha,,10,false,No Tag,10,0.1,0.0,6,4.2,4.3,18,3,2,3,2,3,3,2,2.57,1.0
+Yuki Tanaka,yuki.tanaka@example.com,cb-005,disc-005,Project Alpha,,0,false,No Tag,6,0.333,0.667,3,3.0,2.5,3,0,0,0,1,0,1,1,0.43,0.43
+Carlos Rivera,carlos.rivera@example.com,cb-006,disc-006,Project Alpha,,0,false,No Tag,5,0.0,0.0,3,4.1,4.0,12,2,1,2,2,1,2,2,1.71,1.0
+Emma Thompson,emma.thompson@example.com,cb-007,disc-007,Project Alpha,,10,false,skillbench_trusted,18,0.056,0.0,10,4.7,4.8,30,4,5,4,5,4,4,4,4.29,1.0
+Wei Chen,wei.chen@example.com,cb-008,disc-008,Project Alpha,,0,false,No Tag,5,0.4,0.333,2,3.2,3.0,5,1,0,1,0,1,1,1,0.71,0.71
+Fatima Al-Said,fatima.alsaid@example.com,cb-009,disc-009,Project Alpha,,10,false,No Tag,9,0.111,0.0,5,4.0,4.2,16,2,3,2,2,3,2,2,2.29,1.0
+David Kim,david.kim@example.com,cb-010,disc-010,Project Alpha,,0,true,No Tag,6,0.5,0.667,2,2.0,1.5,0,0,0,0,0,0,0,0,0.0,0.0
+Anna Kowalski,anna.kowalski@example.com,cb-011,disc-011,Project Alpha,,12,false,skillbench_trusted,25,0.04,0.0,14,4.9,5.0,38,6,5,6,5,6,5,5,5.43,1.0
+Luis Fernandez,luis.fernandez@example.com,cb-012,disc-012,Project Alpha,,0,false,No Tag,4,0.0,0.0,2,3.8,4.0,10,1,2,1,2,1,2,1,1.43,1.0
+Priya Patel,priya.patel@example.com,cb-013,disc-013,Project Alpha,,10,false,skillbench_trusted,12,0.083,0.0,7,4.5,4.7,22,3,4,3,3,3,3,3,3.14,1.0
+Olga Petrova,olga.petrova@example.com,cb-014,disc-014,Project Alpha,,0,false,No Tag,2,0.0,0.0,1,3.5,3.5,1,0,0,0,0,0,0,1,0.14,0.14
+Kenji Sato,kenji.sato@example.com,cb-015,disc-015,Project Alpha,,10,false,No Tag,11,0.182,0.333,6,3.8,3.3,15,2,2,3,2,2,2,2,2.14,1.0
+Nina Johansson,nina.johansson@example.com,cb-016,disc-016,Project Alpha,,0,false,No Tag,9,0.0,0.0,5,4.3,4.5,20,3,3,3,3,2,3,3,2.86,1.0
+Ibrahim Diallo,ibrahim.diallo@example.com,cb-017,disc-017,Project Alpha,,10,false,skillbench_trusted,16,0.063,0.0,9,4.8,5.0,26,4,4,3,4,4,3,4,3.71,1.0
+Rachel Lee,rachel.lee@example.com,cb-018,disc-018,Project Alpha,,0,false,No Tag,4,0.25,0.333,2,3.2,3.0,4,0,1,0,1,0,1,1,0.57,0.57
+Tom Mueller,tom.mueller@example.com,cb-019,disc-019,Project Alpha,,12,false,skillbench_trusted,20,0.05,0.0,11,4.7,4.8,32,5,4,5,4,5,4,5,4.57,1.0
+Aisha Bakari,aisha.bakari@example.com,cb-020,disc-020,Project Alpha,,0,false,No Tag,0,,,,,,0,0,0,0,0,0,0,0,0.0,0.0`;
+      contributors = parseCSV(csv);
+      populateLevelFilter();
+      renderAll();
+    }
+  </script>
+</body>
+</html>

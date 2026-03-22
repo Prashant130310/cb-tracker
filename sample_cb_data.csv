@@ -1,0 +1,21 @@
+name,email,contributor_id,discourse_id,direct_assigned_project,chose_project,review_level,disabled,tag,qc_n,qc_pdr,last_3_pdr,n_qms,avg_qms,last_3_qms,tp_l7d,tp_day_6,tp_day_5,tp_day_4,tp_day_3,tp_day_2,tp_day_1,tp_day_0,avg_tp,active_rate
+Maria Garcia,maria.garcia@example.com,cb-001,disc-001,Project Alpha,,10,false,skillbench_trusted,15,0.0,0.0,8,4.6,4.8,28,4,5,3,4,5,3,4,4.0,1.0
+James Wilson,james.wilson@example.com,cb-002,disc-002,Project Alpha,,0,false,No Tag,8,0.125,0.0,4,3.8,4.0,14,2,3,2,0,3,2,2,2.0,0.86
+Sofia Martinez,sofia.martinez@example.com,cb-003,disc-003,Project Alpha,,12,false,skillbench_trusted,22,0.045,0.0,12,4.9,5.0,35,5,6,5,4,5,5,5,5.0,1.0
+Ahmed Hassan,ahmed.hassan@example.com,cb-004,disc-004,Project Alpha,,10,false,No Tag,10,0.1,0.0,6,4.2,4.3,18,3,2,3,2,3,3,2,2.57,1.0
+Yuki Tanaka,yuki.tanaka@example.com,cb-005,disc-005,Project Alpha,,0,false,No Tag,6,0.333,0.667,3,3.0,2.5,3,0,0,0,1,0,1,1,0.43,0.43
+Carlos Rivera,carlos.rivera@example.com,cb-006,disc-006,Project Alpha,,0,false,No Tag,5,0.0,0.0,3,4.1,4.0,12,2,1,2,2,1,2,2,1.71,1.0
+Emma Thompson,emma.thompson@example.com,cb-007,disc-007,Project Alpha,,10,false,skillbench_trusted,18,0.056,0.0,10,4.7,4.8,30,4,5,4,5,4,4,4,4.29,1.0
+Wei Chen,wei.chen@example.com,cb-008,disc-008,Project Alpha,,0,false,No Tag,5,0.4,0.333,2,3.2,3.0,5,1,0,1,0,1,1,1,0.71,0.71
+Fatima Al-Said,fatima.alsaid@example.com,cb-009,disc-009,Project Alpha,,10,false,No Tag,9,0.111,0.0,5,4.0,4.2,16,2,3,2,2,3,2,2,2.29,1.0
+David Kim,david.kim@example.com,cb-010,disc-010,Project Alpha,,0,true,No Tag,6,0.5,0.667,2,2.0,1.5,0,0,0,0,0,0,0,0,0.0,0.0
+Anna Kowalski,anna.kowalski@example.com,cb-011,disc-011,Project Alpha,,12,false,skillbench_trusted,25,0.04,0.0,14,4.9,5.0,38,6,5,6,5,6,5,5,5.43,1.0
+Luis Fernandez,luis.fernandez@example.com,cb-012,disc-012,Project Alpha,,0,false,No Tag,4,0.0,0.0,2,3.8,4.0,10,1,2,1,2,1,2,1,1.43,1.0
+Priya Patel,priya.patel@example.com,cb-013,disc-013,Project Alpha,,10,false,skillbench_trusted,12,0.083,0.0,7,4.5,4.7,22,3,4,3,3,3,3,3,3.14,1.0
+Olga Petrova,olga.petrova@example.com,cb-014,disc-014,Project Alpha,,0,false,No Tag,2,0.0,0.0,1,3.5,3.5,1,0,0,0,0,0,0,1,0.14,0.14
+Kenji Sato,kenji.sato@example.com,cb-015,disc-015,Project Alpha,,10,false,No Tag,11,0.182,0.333,6,3.8,3.3,15,2,2,3,2,2,2,2,2.14,1.0
+Nina Johansson,nina.johansson@example.com,cb-016,disc-016,Project Alpha,,0,false,No Tag,9,0.0,0.0,5,4.3,4.5,20,3,3,3,3,2,3,3,2.86,1.0
+Ibrahim Diallo,ibrahim.diallo@example.com,cb-017,disc-017,Project Alpha,,10,false,skillbench_trusted,16,0.063,0.0,9,4.8,5.0,26,4,4,3,4,4,3,4,3.71,1.0
+Rachel Lee,rachel.lee@example.com,cb-018,disc-018,Project Alpha,,0,false,No Tag,4,0.25,0.333,2,3.2,3.0,4,0,1,0,1,0,1,1,0.57,0.57
+Tom Mueller,tom.mueller@example.com,cb-019,disc-019,Project Alpha,,12,false,skillbench_trusted,20,0.05,0.0,11,4.7,4.8,32,5,4,5,4,5,4,5,4.57,1.0
+Aisha Bakari,aisha.bakari@example.com,cb-020,disc-020,Project Alpha,,0,false,No Tag,0,,,,,,0,0,0,0,0,0,0,0,0.0,0.0
